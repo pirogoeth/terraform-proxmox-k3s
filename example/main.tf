@@ -33,7 +33,11 @@ module "k3s" {
 
   proxmox_node = "my-proxmox-node"
 
-  node_template = "ubuntu-template"
+  node_templates = {
+    master = "ubuntu-template"
+    worker = "ubuntu-template"
+    support = "ubuntu-template"
+  }
   proxmox_resource_pool = "my-k3s"
 
   network_gateway = "192.168.0.1"

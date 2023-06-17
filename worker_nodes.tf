@@ -3,7 +3,6 @@ resource "macaddress" "k3s-workers" {
 }
 
 locals {
-
   listed_worker_nodes = flatten([
     for pool in var.node_pools :
     [
@@ -16,7 +15,7 @@ locals {
         storage_id     = "local-lvm"
         disk_size      = "20G"
         user           = "k3s"
-        template       = var.node_template
+        template       = var.node_templates["worker"]
         network_bridge = "vmbr0"
         network_tag    = -1
         }), {
@@ -29,7 +28,6 @@ locals {
   mapped_worker_nodes = {
     for node in local.listed_worker_nodes : "${node.name}-${node.i}" => node
   }
-
 }
 
 resource "proxmox_vm_qemu" "k3s-worker" {
@@ -107,9 +105,8 @@ resource "proxmox_vm_qemu" "k3s-worker" {
         node_taints  = each.value.taints
         datastores   = []
 
-        http_proxy  = var.http_proxy
+        http_proxy = var.http_proxy
       })
     ]
   }
-
 }

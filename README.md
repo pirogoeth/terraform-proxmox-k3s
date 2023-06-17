@@ -13,8 +13,7 @@ A module for spinning up an expandable and flexible K3s server for your HomeLab.
 ## Prerequisites
 
 - A Proxmox node with sufficient capacity for all nodes
-- A cloneable or template VM with a size that does not exceed the smallest node size (10G currently) that supports Cloud-init and is based on Debian
-  (ideally ubuntu server)
+- A cloneable or template VM with a size that does not exceed the smallest node size (10G currently) that supports Cloud-init and is based on Ubuntu
 - 2 cidr ranges for master and worker nodes NOT handed out by DHCP (nodes are
   configured with static IPs from these ranges)
 
@@ -32,7 +31,11 @@ module "k3s" {
 
   proxmox_node = "my-proxmox-node"
 
-  node_template = "ubuntu-template"
+  node_templates = {
+    master = "ubuntu-template"
+    worker = "ubuntu-template"
+    support = "ubuntu-template"
+  }
   proxmox_resource_pool = "my-k3s"
 
   network_gateway = "192.168.0.1"

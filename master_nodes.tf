@@ -33,7 +33,7 @@ resource "proxmox_vm_qemu" "k3s-master" {
   target_node = var.proxmox_node
   name        = "${var.cluster_name}-master-${count.index}"
 
-  clone = var.node_template
+  clone = var.node_templates["master"]
 
   pool = var.proxmox_resource_pool
 

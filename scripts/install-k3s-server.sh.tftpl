@@ -20,6 +20,6 @@ curl -sfL https://get.k3s.io | sh -s - ${mode} \
 --node-taint "${ taint }" \
 %{ endfor ~}
 %{ for db in datastores ~}
---datastore-endpoint="mysql://${db.user}:${db.password}@tcp(${db.host})/${db.name}" \
+--datastore-endpoint="postgres://${db.user}:${db.password}@${db.host}/${db.name}" \
 %{ endfor ~}
 --log $HOME/.k3s-install-log.txt

@@ -46,11 +46,15 @@ variable "cluster_name" {
   description = "Name of the cluster used for prefixing cluster components (ie nodes)."
 }
 
-variable "node_template" {
-  type        = string
+variable "node_templates" {
+  type        = object({
+    master = string
+    worker = string
+    support = string
+  })
   description = <<EOF
-Proxmox vm to use as a base template for all nodes. Can be a template or
-another vm that supports cloud-init.
+Object mapping of node template names to proxmox node template names.
+Can be a template VM or plain VM, as long as cloud-init is supported.
 EOF
 }
 
@@ -120,6 +124,7 @@ variable "node_pools" {
     network_bridge = optional(string),
   }))
 }
+
 variable "api_hostnames" {
   description = "Alternative hostnames for the API server."
   type        = list(string)
@@ -131,7 +136,6 @@ variable "k3s_disable_components" {
   type        = list(string)
   default     = []
 }
-
 
 variable "http_proxy" {
   default     = ""

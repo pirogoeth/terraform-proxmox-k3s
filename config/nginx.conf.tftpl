@@ -6,7 +6,7 @@ events {
 
 stream {
     upstream k3s_servers {
-        %{ for host in k3s_server_hosts ~}
+        %{ for host in k3s_server_nodes ~}
         server ${host};
         %{ endfor ~}
     }
@@ -17,13 +17,13 @@ stream {
     }
 
     upstream k3s_nodes_ingress_http {
-        %{ for ip in k3s_nodes ~}
+        %{ for ip in k3s_worker_nodes ~}
         server ${ip}:80;
         %{ endfor ~}
     }
 
     upstream k3s_nodes_ingress_https {
-        %{ for ip in k3s_nodes ~}
+        %{ for ip in k3s_worker_nodes ~}
         server ${ip}:443;
         %{ endfor ~}
     }
