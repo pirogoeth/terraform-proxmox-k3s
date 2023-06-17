@@ -8,6 +8,11 @@ locals {
   lan_subnet_cidr_bitnum = split("/", var.lan_subnet)[1]
 }
 
+resource "random_password" "pgadmin-user-password" {
+  length  = 16
+  special = true
+}
+
 resource "proxmox_vm_qemu" "k3s-support" {
   target_node = var.proxmox_node
   name        = join("-", [var.cluster_name, "support"])
@@ -72,6 +77,13 @@ resource "proxmox_vm_qemu" "k3s-support" {
       k3s_user     = var.support_node_settings.db_user
       k3s_password = random_password.k3s-master-db-password.result
 
+      postgres_version = var.postgres_version
+      pgadmin_version  = var.pgadmin_version
+      pgadmin_email    = var.pgadmin_email
+      pgadmin_password = coalesce(var.pgadmin_password, random_password.pgadmin-user-password.result)
+
+      nginx_version = var.nginx_version
+
       http_proxy = var.http_proxy
     })
   }
@@ -114,8 +126,8 @@ resource "null_resource" "k3s_nginx_config" {
 
   triggers = {
     config_change    = filemd5("${path.module}/config/nginx.conf.tftpl")
-    k3s_server_nodes = local.k3s_server_nodes
-    k3s_worker_nodes = local.k3s_worker_nodes
+    k3s_server_nodes = join(",", local.k3s_server_nodes)
+    k3s_worker_nodes = join(",", local.k3s_worker_nodes)
   }
 
   connection {

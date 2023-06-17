@@ -110,18 +110,18 @@ variable "node_pools" {
 
     taints = optional(list(string)),
 
-    cores        = optional(number),
-    sockets      = optional(number),
-    memory       = optional(number),
-    storage_type = optional(string),
-    storage_id   = optional(string),
-    disk_size    = optional(string),
-    user         = optional(string),
-    network_tag  = optional(number),
+    cores        = optional(number, 2),
+    sockets      = optional(number, 1),
+    memory       = optional(number, 4096),
+    storage_type = optional(string, "scsi"),
+    storage_id   = optional(string, "local-lvm"),
+    disk_size    = optional(string, "20G"),
+    user         = optional(string, "k3s"),
+    network_tag  = optional(number, -1),
 
     template = optional(string),
 
-    network_bridge = optional(string),
+    network_bridge = optional(string, "vmbr0"),
   }))
 }
 
@@ -147,4 +147,33 @@ variable "nameserver" {
   default     = ""
   type        = string
   description = "nameserver"
+}
+
+variable "postgres_version" {
+  type        = string
+  description = "Version of Postgres container"
+  default     = "15.3-alpine"
+}
+
+variable "pgadmin_version" {
+  type        = string
+  description = "Version of pgAdmin4 container"
+  default     = "6"
+}
+
+variable "pgadmin_email" {
+  type        = string
+  description = "User login email for pgAdmin4"
+}
+
+variable "pgadmin_password" {
+  type        = string
+  description = "User login password for pgAdmin4"
+  default     = ""
+}
+
+variable "nginx_version" {
+  type        = string
+  description = "Version of nginx container"
+  default     = "latest"
 }

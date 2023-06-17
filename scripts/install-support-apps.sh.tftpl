@@ -1,16 +1,16 @@
 #!/bin/bash
 
-POSTGRES_VERSION="${postgres_version:-15.3-alpine}"
+POSTGRES_VERSION="${postgres_version}"
 POSTGRES_ROOT_PASSWORD="${root_password}"
 POSTGRES_K3S_DATABASE="${k3s_database}"
 POSTGRES_K3S_USER="${k3s_user}"
 POSTGRES_K3S_PASSWORD="${k3s_password}"
 
-PGADMIN_VERSION="${pgadmin_version:-latest}"
+PGADMIN_VERSION="${pgadmin_version}"
 PGADMIN_EMAIL="${pgadmin_email}"
 PGADMIN_PASSWORD="${pgadmin_password}"
 
-NGINX_VERSION="${nginx_version:-latest}"
+NGINX_VERSION="${nginx_version}"
 
 export HTTP_PROXY="${http_proxy}"
 export HTTPS_PROXY="${http_proxy}"
@@ -20,46 +20,49 @@ export https_proxy="${http_proxy}"
 setup_postgres() {
     mkdir -p /opt/k3s-postgres/{data,init}
     cat <<-EOF > /opt/k3s-postgres/init/init.sql
-        CREATE USER IF NOT EXISTS ${POSTGRES_K3S_USER} WITH PASSWORD '${POSTGRES_K3S_PASSWORD}';
-        CREATE DATABASE IF NOT EXISTS ${POSTGRES_K3S_DATABASE};
-        GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_K3S_DATABASE} TO ${POSTGRES_K3S_USER};
+        CREATE USER IF NOT EXISTS $${POSTGRES_K3S_USER} WITH PASSWORD '$${POSTGRES_K3S_PASSWORD}';
+        CREATE DATABASE IF NOT EXISTS $${POSTGRES_K3S_DATABASE};
+        GRANT ALL PRIVILEGES ON DATABASE $${POSTGRES_K3S_DATABASE} TO $${POSTGRES_K3S_USER};
 EOF
-    docker pull postgres:${POSTGRES_VERSION}
+    docker pull postgres:$${POSTGRES_VERSION}
     docker run -it -d --name=k3s-postgres \
+        --restart=always \
         -p 0.0.0.0:5432:5432 \
         -e POSTGRES_USER="root" \
-        -e POSTGRES_PASSWORD="${POSTGRES_ROOT_PASSWORD}" \
+        -e POSTGRES_PASSWORD="$${POSTGRES_ROOT_PASSWORD}" \
         -v /opt/k3s-postgres/data:/var/lib/postgresql/data \
         -v /opt/k3s-postgres/init:/docker-entrypoint-initdb.d \
-        postgres:${POSTGRES_VERSION}
+        postgres:$${POSTGRES_VERSION}
 
     mkdir -p /opt/k3s-postgres-admin/{conf,data}
     touch /opt/k3s-postgres-admin/conf/config_local.py
     touch /opt/k3s-postgres-admin/conf/servers.json
     chown -Rv 5050:5050 /opt/k3s-postgres-admin
-    docker pull dpage/pgadmin4:${PGADMIN_VERSION}
+    docker pull dpage/pgadmin4:$${PGADMIN_VERSION}
     docker run -it -d --name=k3s-postgres-admin \
+        --restart=always \
         -p 127.0.0.1:5050:5050 \
-        -e PGADMIN_DEFAULT_EMAIL="${PGADMIN_EMAIL}" \
-        -e PGADMIN_DEFAULT_PASSWORD="${PGADMIN_PASSWORD}" \
+        -e PGADMIN_DEFAULT_EMAIL="$${PGADMIN_EMAIL}" \
+        -e PGADMIN_DEFAULT_PASSWORD="$${PGADMIN_PASSWORD}" \
         -e PGADMIN_LISTEN_PORT="5050" \
         --link k3s-postgres:postgres \
         -v /opt/k3s-postgres-admin/conf/config_local.py:/pgadmin4/config_local.py \
         -v /opt/k3s-postgres-admin/conf/servers.json:/pgadmin4/servers.json \
         -v /opt/k3s-postgres-admin/data:/var/lib/pgadmin \
-        dpage/pgadmin4:${PGADMIN_VERSION}
+        dpage/pgadmin4:$${PGADMIN_VERSION}
 }
 
 setup_nginx() {
     mkdir -p /opt/k3s-nginx/{conf,templates,logs}
 
-    docker pull nginx:${NGINX_VERSION}
+    docker pull nginx:$${NGINX_VERSION}
     docker run -it -d --name=k3s-nginx \
+        --restart=always \
         -p 0.0.0.0:80:80 \
         -p 0.0.0.0:443:443 \
         -p 0.0.0.0:6443:6443 \
         -v /opt/k3s-nginx/templates:/etc/nginx/templates \
-        nginx:${NGINX_VERSION}
+        nginx:$${NGINX_VERSION}
 }
 
 setup_postgres
