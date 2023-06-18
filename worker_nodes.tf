@@ -8,8 +8,8 @@ locals {
     [
       for i in range(pool.size) :
       merge(
-        { template = var.node_templates["worker"] },
         pool,
+        { template = coalesce(pool.template, var.node_templates["worker"]) },
         {
           i  = i
           ip = cidrhost(pool.subnet, i)
